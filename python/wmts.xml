@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Capabilities xmlns="http://www.opengis.net/wmts/1.0"
+	xmlns:ows="http://www.opengis.net/ows/1.1"
+	xmlns:xlink="http://www.w3.org/1999/xlink"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:gml="http://www.opengis.net/gml" xsi:schemaLocation="http://www.opengis.net/wmts/1.0 http://geowebcache.org/schema/opengis/wmts/1.0.0/wmtsGetCapabilities_response.xsd"
+	version="1.0.0">
+	<ows:ServiceIdentification>
+		<ows:Title>Google WMTS - fiftyk</ows:Title>
+		<ows:ServiceType>OGC WMTS</ows:ServiceType>
+		<ows:ServiceTypeVersion>1.0.0</ows:ServiceTypeVersion>
+	</ows:ServiceIdentification>
+	<ows:ServiceProvider>
+		<ows:ProviderName>http://localhost:5555/wmts</ows:ProviderName>
+		<ows:ProviderSite xlink:href="http://localhost:5555/wmts" />
+		<ows:ServiceContact>
+			<ows:IndividualName>fiftyk@qq.com</ows:IndividualName>
+		</ows:ServiceContact>
+	</ows:ServiceProvider>
+	<ows:OperationsMetadata>
+		<ows:Operation name="GetCapabilities">
+			<ows:DCP>
+				<ows:HTTP>
+					<ows:Get xlink:href="http://localhost:5555/wmts?">
+						<ows:Constraint name="GetEncoding">
+							<ows:AllowedValues>
+								<ows:Value>KVP</ows:Value>
+							</ows:AllowedValues>
+						</ows:Constraint>
+					</ows:Get>
+				</ows:HTTP>
+			</ows:DCP>
+		</ows:Operation>
+		<ows:Operation name="GetTile">
+			<ows:DCP>
+				<ows:HTTP>
+					<ows:Get xlink:href="http://localhost:5555/wmts?">
+						<ows:Constraint name="GetEncoding">
+							<ows:AllowedValues>
+								<ows:Value>KVP</ows:Value>
+							</ows:AllowedValues>
+						</ows:Constraint>
+					</ows:Get>
+				</ows:HTTP>
+			</ows:DCP>
+		</ows:Operation>
+	</ows:OperationsMetadata>
+	<Contents>
+		<Layer>
+			<ows:Title>Google Street Map</ows:Title>
+			<ows:WGS84BoundingBox>
+				<ows:LowerCorner>-180.0 -90.0</ows:LowerCorner>
+				<ows:UpperCorner>180.0 90.0</ows:UpperCorner>
+			</ows:WGS84BoundingBox>
+			<ows:Identifier>street</ows:Identifier>
+			<Style isDefault="true">
+				<ows:Identifier>_null</ows:Identifier>
+			</Style>
+			<Format>image/png</Format>
+			<TileMatrixSetLink>      
+				<TileMatrixSet>GMAP</TileMatrixSet>
+			</TileMatrixSetLink>  
+		</Layer>
+		<Layer>
+            <ows:Title>Google Satellite Map</ows:Title>
+            <ows:WGS84BoundingBox>
+				<ows:LowerCorner>-180.0 -90.0</ows:LowerCorner>
+				<ows:UpperCorner>180.0 90.0</ows:UpperCorner>
+			</ows:WGS84BoundingBox>
+            <ows:Identifier>satellite</ows:Identifier>
+            <Style isDefault="true">
+                <ows:Identifier>_null</ows:Identifier>
+            </Style>
+            <Format>image/png</Format>
+            <TileMatrixSetLink>      
+                <TileMatrixSet>GMAP</TileMatrixSet>
+            </TileMatrixSetLink>  
+        </Layer>
+		<TileMatrixSet>
+			<ows:Identifier>GMAP</ows:Identifier>
+			<ows:SupportedCRS>urn:ogc:def:crs:EPSG:6.18:3:3857</ows:SupportedCRS>
+			%s
+		</TileMatrixSet>
+	</Contents>
+	<ServiceMetadataURL xlink:href="http://localhost:5555/wmts?REQUEST=getcapabilities&amp;VERSION=1.0.0"/>
+</Capabilities>
