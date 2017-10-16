@@ -1,24 +1,22 @@
 #coding=utf-8
 #Filename:Dmc_cmd.py
-import cmath,urllib,os,math,random,sys,time,threading
-# from threading import Condition
+import cmath, urllib, os, math, random, sys, time, threading
 import Queue
 import datetime
 
 from walkDir import *
 
-
 class Cdt:
     def __str__(self):
-        return '{x = %s,y = %s}'%(self.x,self.y)        
+        return '{x = %s, y = %s}'%(self.x, self.y)
 
-def createName(num,type):
-    #'''创建文件夹/文件名称'''
+def createName(num, rc):
+    '''创建文件夹/文件名称'''
     temp = '00000000'+str(hex(int(num)))[2:]
-    return type + temp[::-1][0:8][::-1]
+    return rc + temp[::-1][0:8][::-1]
 
-def getPixelFromCdt(x,y,z):
-    #'''根据经纬度坐标以及缩放等级获取像素坐标'''
+def getPixelFromCdt(x, y, z):
+    '''根据经纬度坐标以及缩放等级获取像素坐标'''
     pixel = Cdt()
     sinLatitude = cmath.sin(y * cmath.pi / 180)
     pixel.x = ((x + 180) / 360) * 256 * (2**z)
@@ -33,14 +31,12 @@ def getTileFromPixel(pixel):
     tile.y = math.floor(pixel.y / 256)
     return tile
 
-def getTileFromCdt(x,y,z):
-    #'''根据经纬度坐标以及缩放等级获取切片'''
-    return getTileFromPixel(getPixelFromCdt(x,y,z))
+def getTileFromCdt(x, y, z):
+    '''根据经纬度坐标以及缩放等级获取切片'''
+    return getTileFromPixel(getPixelFromCdt(x, y, z))
 
-
-   
-def createCacheStruc(extent,lvRange,cacheDir):
-    #'''创建缓存目录结构及计算tile'''
+def createCacheStruc(extent, lvRange, cacheDir):
+    '''创建缓存目录结构及计算tile'''
     global tempTask
     tempTask = Queue.Queue()    #事先把队列创建好之后再创建并启动线程，保证qsize正常
 
@@ -61,24 +57,23 @@ def createCacheStruc(extent,lvRange,cacheDir):
             rowName = cacheDir +os.sep + lvName + os.sep + createName(row,'R') 
             if not os.path.exists(rowName):
                 os.makedirs(rowName)  
-            
+
             for col in xRange:
-                tempTask.put('%s,%s,%s'%(lv,row,col))
+                tempTask.put('%s, %s, %s'%(lv, row, col))
 
-
-def createRemoteUrl(x,y,z):
-    #'''创建远程tile地址'''
-    port = str(random.randint(0,3))
+def createRemoteUrl(x, y, z):
+    '''创建远程tile地址'''
+    port = str(random.randint(0, 3))
     x = str(x)
     y = str(y)
     z = str(z)
-    return 'http://mt%d.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=$s&y=%s&z=%s&s='%(port, x, y, z)
-    
-def createLocalFile(x,y,z,cacheDir):
-    #'''创建缓存本地路径'''
-    #计算<等级目录>名称
+    return 'http://mt%s.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=%s&y=%s&z=%s&s='%(port, x, y, z)
 
-    if int(z)<10:
+def createLocalFile(x, y, z, cacheDir):
+    '''创建缓存本地路径
+    计算<等级目录>名称'''
+
+    if int(z) < 10:
         l = 'L0' + str(z)  #x,y,z为字符串类型
     else:
         l = 'L' + str(z)
@@ -89,21 +84,17 @@ def createLocalFile(x,y,z,cacheDir):
     #拼装本地路径
     return cacheDir + os.sep + l + os.sep + r + os.sep + c + '.png'
 
+def downloadTile(remoteFile, localFile):
+    '''下载远程文件到本地'''
+    urllib.urlretrieve(remoteFile, localFile)
 
-def downloadTile(remoteFile,localFile):
-    #'''下载远程文件到本地'''
-    urllib.urlretrieve(remoteFile,localFile)
-
-
-
-
-def loadTask(task,threadNum):
+def loadTask(task, threadNum):
     global failureTask
     failureTask = []
     global tasksize
     tasksize = tempTask.qsize()
 
-    print u'待下载Tile总计:%s,下载线程数:%s'%(tasksize,threadNum)
+    print u'待下载Tile总计:%s,下载线程数:%s'%(tasksize, threadNum)
     print u'开始下载'
     print u'下载中...'
 
@@ -112,20 +103,18 @@ def loadTask(task,threadNum):
     for i in range(threadNum):
         Download(tempTask).start() #生成多个线程并启动
         print datetime.datetime.now()
-
-
-    
+   
 class Download(threading.Thread):
     progress = 0
     # sucessCount = 0
     failureCount = 0
 
-    def __init__(self,queue):
+    def __init__(self, queue):
         threading.Thread.__init__(self)
         self.lock = threading.RLock()
         self.queue = queue
 
-    def run(self):        
+    def run(self):
         while 1:
             item = self.queue.get()
             if item is None:
@@ -135,14 +124,14 @@ class Download(threading.Thread):
             lv = valueAry[0]
             row = valueAry[1]
             col = valueAry[2]
-            remoteFile = createRemoteUrl(col,row,lv)
-            print remoteFile
-            localFile = createLocalFile(col,row,lv,cacheDir)
+            print col, row, lv
+            remoteFile = createRemoteUrl(col, row, lv)
+            localFile = createLocalFile(col, row, lv, cacheDir)
             try:
-                downloadTile(remoteFile,localFile)
+                downloadTile(remoteFile, localFile)
             except:
-                logStr = '%s,%s,%s'%(lv,row,col)
-                f = file(cacheDir+os.sep+'error.log','a')#在日志文件中打印失败记录
+                logStr = '%s,%s,%s'%(lv, row, col)
+                f = file(cacheDir + os.sep + 'error.log','a')#在日志文件中打印失败记录
                 f.write(logStr+'\n')
                 f.close()
 
@@ -158,55 +147,35 @@ class Download(threading.Thread):
             self.queue.task_done()
             Download.progress = Download.progress + 1 #记录下载总数量，包括失败数量
             if Download.progress%100 == 0:
-                print u'下载进度为:%s/%s'%(Download.progress,tasksize)
+                print u'下载进度为:%s/%s'%(Download.progress, tasksize)
                 print datetime.datetime.now()
             self.lock.release()
 
-
-
-
-
 if __name__ == '__main__':
     
-    extent = raw_input(unicode('区域范围:','utf-8').encode('gbk'))
-    maxLv = raw_input(unicode('最大等级:','utf-8').encode('gbk'))
-    minLv = raw_input(unicode('最小等级:','utf-8').encode('gbk'))
+    extent = raw_input('区域范围:')
+    maxLv = raw_input('最大等级:')
+    minLv = raw_input('最小等级:')
 
-    global extAry,lvRange,cacheDir,threadNum
+    global extAry, lvRange, cacheDir, threadNum
     ext = [float(i) for i in extent.split(' ')]
-    extAry = [ext[0],ext[3],ext[2],ext[1]]          #区域范围
-    lvRange = range(int(minLv),int(maxLv) + 1)      #等级范围
-    cacheDir = raw_input(unicode('下载目录:','utf-8').encode('gbk'))      #下载目录
-    threadNum = raw_input(unicode('下载线程:','utf-8').encode('gbk'))  #下载线程
+    extAry = [ext[0], ext[3], ext[2], ext[1]]          #区域范围
+    lvRange = range(int(minLv), int(maxLv) + 1)      #等级范围
+    cacheDir = raw_input('下载目录:')      #下载目录
+    threadNum = raw_input('下载线程:')  #下载线程
 
-    databaseDir = raw_input(unicode('请输入sqlite数据库存储目录(eg:c:)：','utf-8').encode('gbk'))
-    filename = raw_input(unicode('请为瓦片数据库命名(eg:mytiles)：','utf-8').encode('gbk'))
+    databaseDir = raw_input('请输入sqlite数据库存储目录(eg:c:)：')
+    filename = raw_input('请为瓦片数据库命名(eg:mytiles)：')
 
-
-    # threads = []  #存放所有子线程
-    
-
-    createCacheStruc(extAry,lvRange,cacheDir)       #创建缓存目录结构
-    loadTask(tempTask,int(threadNum))                    #下载
-    
-    # print 'over' 
-
-    # import datetime
-    # for thread in threads:
-    #     thread.join()  #等待线程结束
-        # print datetime.datetime.now()
+    createCacheStruc(extAry, lvRange, cacheDir)       #创建缓存目录结构
+    loadTask(tempTask, int(threadNum))                    #下载
 
     tempTask.join()
     print u'下载进度为:%s'%Download.progress
-    print u'下载结束' 
+    print u'下载结束'
 
     print u'正在转换...'
-    # print datetime.datetime.now()
 
     time.sleep(2)
- 
-    visitDir(cacheDir,databaseDir,filename)
 
-
-
-     
+    visitDir(cacheDir, databaseDir, filename)
