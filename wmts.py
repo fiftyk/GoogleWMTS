@@ -23,6 +23,7 @@ class WMTSHandler(tornado.web.RequestHandler):
     url_pattern = {
         "street":"http://mt0.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=%s&y=%s&z=%s&s=",
         "satellite":"http://khm1.google.com/kh/v=114&src=app&x=%s&y=%s&z=%s",
+        "local": "http://127.0.0.1:9001/TMS/%s/%s/%s"
     }
     
     def initialize(self):

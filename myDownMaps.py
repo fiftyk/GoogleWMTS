@@ -59,15 +59,14 @@ def createCacheStruc(extent, lvRange, cacheDir):
                 os.makedirs(rowName)  
 
             for col in xRange:
-                tempTask.put('%s, %s, %s'%(lv, row, col))
+                tempTask.put('%s,%s,%s'%(lv, row, col))
 
 def createRemoteUrl(x, y, z):
     '''创建远程tile地址'''
     port = str(random.randint(0, 3))
-    x = str(x)
-    y = str(y)
-    z = str(z)
-    return 'http://mt%s.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=%s&y=%s&z=%s&s='%(port, x, y, z)
+    url = 'http://mt%s.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=%s&y=%s&z=%s&s='%(port, x, y, z)
+    print url
+    return url
 
 def createLocalFile(x, y, z, cacheDir):
     '''创建缓存本地路径
@@ -102,7 +101,6 @@ def loadTask(task, threadNum):
         tempTask.put(None)
     for i in range(threadNum):
         Download(tempTask).start() #生成多个线程并启动
-        print datetime.datetime.now()
    
 class Download(threading.Thread):
     progress = 0
@@ -124,7 +122,6 @@ class Download(threading.Thread):
             lv = valueAry[0]
             row = valueAry[1]
             col = valueAry[2]
-            print col, row, lv
             remoteFile = createRemoteUrl(col, row, lv)
             localFile = createLocalFile(col, row, lv, cacheDir)
             try:
@@ -148,24 +145,22 @@ class Download(threading.Thread):
             Download.progress = Download.progress + 1 #记录下载总数量，包括失败数量
             if Download.progress%100 == 0:
                 print u'下载进度为:%s/%s'%(Download.progress, tasksize)
-                print datetime.datetime.now()
             self.lock.release()
 
 if __name__ == '__main__':
-    
-    extent = raw_input('区域范围:')
-    maxLv = raw_input('最大等级:')
-    minLv = raw_input('最小等级:')
+    extent = '114.350570 23.049234 114.501218 23.149616'
+    maxLv = '18'
+    minLv = '8'
 
     global extAry, lvRange, cacheDir, threadNum
     ext = [float(i) for i in extent.split(' ')]
     extAry = [ext[0], ext[3], ext[2], ext[1]]          #区域范围
     lvRange = range(int(minLv), int(maxLv) + 1)      #等级范围
-    cacheDir = raw_input('下载目录:')      #下载目录
-    threadNum = raw_input('下载线程:')  #下载线程
+    cacheDir = '/Users/liurongtao/Documents/Traffic/GoogleWMTS/tiles'      #下载目录
+    threadNum = 20  #下载线程
 
-    databaseDir = raw_input('请输入sqlite数据库存储目录(eg:c:)：')
-    filename = raw_input('请为瓦片数据库命名(eg:mytiles)：')
+    databaseDir = '/Users/liurongtao/Documents/Traffic/GoogleWMTS'
+    filename = 'huizhou'
 
     createCacheStruc(extAry, lvRange, cacheDir)       #创建缓存目录结构
     loadTask(tempTask, int(threadNum))                    #下载
