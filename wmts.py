@@ -10,6 +10,11 @@ import sqlite3, cStringIO, math, os, logging
 from PIL import Image
 from tornado.web import GZipContentEncoding
 
+environ = os.environ
+
+ENV_HOST = environ.get('HOST', '127.0.0.1')
+ENV_PORT = environ.get('POST', '5555')
+
 img = Image.new('RGBA', (256, 256), (128, 0, 0, 0))
 tmp = cStringIO.StringIO()
 img.save(tmp, 'PNG')
@@ -29,9 +34,7 @@ class WMTSHandler(tornado.web.RequestHandler):
             </TileMatrix>'''
     
     url_pattern = {
-        'street1':'http://mt0.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=%s&y=%s&z=%s&s=',
-        'satellite':'http://khm1.google.com/kh/v=114&src=app&x=%s&y=%s&z=%s',
-        'street': 'http://192.168.20.141:5555/TMS/%s/%s/%s'
+        'street': 'http://' + ENV_HOST + ':' + ENV_PORT + '/TMS/%s/%s/%s'
     }
     
     def initialize(self):
@@ -60,7 +63,7 @@ class WMTSHandler(tornado.web.RequestHandler):
                 TileMatrix_List += self.TileMatrix%(level, scale, width, width)
             
             self.xml = open('wmts.xml').read()%TileMatrix_List
-            self.write(self.xml)
+            self.write(self.xml.replace('localhost', ENV_HOST).replace('5555', ENV_PORT))
 
     post = get
 
@@ -86,5 +89,5 @@ application = tornado.web.Application([
     (r'/TMS/(\w+)/(\w+)/(\w+)', TMS, { 'baseDir' : '/data' }),
 ], '', None, gzip=True)
 
-application.listen(5555)
+application.listen(ENV_PORT)
 tornado.ioloop.IOLoop.instance().start()
