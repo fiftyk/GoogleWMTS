@@ -1,25 +1,46 @@
-# Google WMTS
+# Mapserver
 
-使用 WMTS 协议访问 Google 底图
+## 更新日志
 
-个人有这样的体验过程：
+[更新日志](./Changelog.md)
 
-* 扫描纸质地图，然后配准矢量化
-* 下载 Google Tile，拼接，再配准矢量化
-* 下载 Google Tile，替换 ArcGIS Server Cache，ArcMap 加载 MapServer，不用配准了，矢量化
-* 使用这个
+## 构建镜像
 
+执行脚本：
 
-其实还有其它办法，比如在 QGIS 中，通过 OpenLayers Plugin ...
+```bash
+chmod +x ./build.sh
+./build.sh
+```
 
+## 导出镜像至文件
 
-## 使用场景
+指定存储位置和文件名称，将构建的镜像打包成 tar 文件
 
-* 使用 ArcMap 加载 WMTS 协议的栅格底图，进行矢量化
+```bash
+docker save zxht/wmts-mapserver:1.1.0 > ./wmts-mapserver@1.1.0.tar
+```
 
-## 使用方法
+## 导入镜像至服务器
 
-*使用前请确保你安装了 Python 以及 Tornado*
+将上一步骤的导出的 `wmts-mapserver@1.1.0.tar` 文件拷贝到服务器，使用下面命令还原成 docker images。
 
-	python wmts.py
-    
+```bash
+docker load -i ./wmts-mapserver@1.1.0.tar
+```
+
+### 配置 docker-compose.yml 启动
+
+```yml
+google-wmts:
+  container_name: mapserver
+  image: zxht/wmts-mapserver:1.1.0
+  environment:
+    - PORT=5555
+    - HOST=127.0.0.1 
+  ports:
+    - 5555:5555
+  privileged: true
+```
+
+注意我们在上面的 docker-compose.yml 中配置了 `HOST` 和 `POST` 两个环节变量。

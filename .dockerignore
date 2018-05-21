@@ -1,0 +1,7 @@
+tiles/
+.vscode/
+*.sh
+docker-compose.yml
+*.sqlites
+*.pyc
+README.md
