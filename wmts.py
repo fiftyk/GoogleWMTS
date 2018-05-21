@@ -6,8 +6,16 @@ Created on 2012-7-19
 '''
 import tornado.ioloop
 import tornado.web
-import sqlite3,StringIO,math
+import sqlite3, cStringIO, math, os, logging
+from PIL import Image
 from tornado.web import GZipContentEncoding
+
+img = Image.new("RGBA",(256,256),(128,0,0,0))
+tmp = cStringIO.StringIO()
+img.save(tmp,'PNG')
+blank = tmp.getvalue()
+
+logging.basicConfig(level=logging.DEBUG, filename='main.log')
 
 class WMTSHandler(tornado.web.RequestHandler):
     TileMatrix = '''<TileMatrix>
@@ -21,9 +29,9 @@ class WMTSHandler(tornado.web.RequestHandler):
             </TileMatrix>'''
     
     url_pattern = {
-        "street":"http://mt0.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=%s&y=%s&z=%s&s=",
+        "street1":"http://mt0.google.cn/vt/lyrs=m@169000000&hl=zh-CN&gl=cn&x=%s&y=%s&z=%s&s=",
         "satellite":"http://khm1.google.com/kh/v=114&src=app&x=%s&y=%s&z=%s",
-        "local": "http://127.0.0.1:9001/TMS/%s/%s/%s"
+        "street": "http://192.168.20.141:5555/TMS/%s/%s/%s"
     }
     
     def initialize(self):
@@ -58,8 +66,24 @@ class WMTSHandler(tornado.web.RequestHandler):
 
 GZipContentEncoding.CONTENT_TYPES.add("image/png")
 
+class TMS(tornado.web.RequestHandler):
+    def initialize(self, baseDir):
+        self.baseDir = baseDir
+
+    def get(self, x, y, z):
+        image_path = os.path.join(self.baseDir, z, x, y) + '.png'
+        self.set_header("Content-Type", "image/png")
+        logging.info(image_path)
+        if os.path.exists(image_path):
+            inn = cStringIO.StringIO()
+            Image.open(image_path).save(inn, "png")
+            self.write(inn.getvalue())
+        else:
+            self.write(blank)
+    
 application = tornado.web.Application([
-    (r"/wmts",WMTSHandler)
+    (r"/wmts", WMTSHandler),
+    (r"/TMS/(\w+)/(\w+)/(\w+)", TMS, { 'baseDir' : '/data' }),
 ],"",None,gzip=True)
 
 application.listen(5555)
