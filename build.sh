@@ -1,1 +1,1 @@
-docker build -t zxht/wmts-mapserver .
+docker build -t zxht/wmts-mapserver:1.1.0 .

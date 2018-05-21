@@ -1,6 +1,6 @@
 google-wmts:
   container_name: mapserver
-  image: zxht/wmts-mapserver:latest
+  image: zxht/wmts-mapserver:1.1.0
   environment:
     - PORT=5555
     - HOST=127.0.0.1 
