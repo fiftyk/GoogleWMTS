@@ -37,7 +37,7 @@ google-wmts:
   image: zxht/wmts-mapserver:1.1.0
   environment:
     - PORT=5555
-    - HOST=127.0.0.1 
+    - HOST=127.0.0.1
   ports:
     - 5555:5555
   privileged: true
