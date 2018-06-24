@@ -14,6 +14,7 @@ environ = os.environ
 
 ENV_HOST = environ.get('HOST', '127.0.0.1')
 ENV_PORT = environ.get('POST', '5555')
+ENV_TILE_TYPE = environ.get('TILE_TYPE', 'default')
 
 img = Image.new('RGBA', (256, 256), (128, 0, 0, 0))
 tmp = cStringIO.StringIO()
@@ -74,7 +75,13 @@ class TMS(tornado.web.RequestHandler):
         self.baseDir = baseDir
 
     def get(self, x, y, z):
-        image_path = os.path.join(self.baseDir, z, x, y) + '.png'
+        if ENV_TILE_TYPE == 'GOOGLE':
+            x = 'C%s' % (hex(int(x))[2:].rjust(8, '0'))
+            y = 'R%s' % (hex(int(y))[2:].rjust(8, '0'))
+            z = 'L%s' % (z.rjust(2, '0'))
+            image_path = os.path.join(self.baseDir, z, y, x) + '.png'
+        else:
+            image_path = os.path.join(self.baseDir, z, x, y) + '.png'
         self.set_header('Content-Type', 'image/png')
         logging.info(image_path)
         if os.path.exists(image_path):
