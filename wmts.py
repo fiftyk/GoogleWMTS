@@ -13,7 +13,7 @@ from tornado.web import GZipContentEncoding
 environ = os.environ
 
 ENV_HOST = environ.get('HOST', '127.0.0.1')
-ENV_PORT = environ.get('POST', '5555')
+ENV_PORT = environ.get('PORT', '5555')
 ENV_TILE_TYPE = environ.get('TILE_TYPE', 'default')
 
 img = Image.new('RGBA', (256, 256), (128, 0, 0, 0))
